@@ -1,0 +1,82 @@
+buildscript {
+    ext {
+        springBootVersion = '1.5.9.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+group = 'com.autoyol.xxljob'
+version = '2.0.1-SNAPSHOT'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    maven{url "http://10.0.3.208:8081/nexus/content/groups/public/"}
+    maven{url "http://maven.aliyun.com/nexus/content/groups/public"}
+    mavenCentral()
+}
+
+configurations {
+	providedRuntime
+}
+
+dependencies {
+    compile('org.springframework.boot:spring-boot-starter:1.5.9.RELEASE')
+    compile('org.springframework.boot:spring-boot-starter-web:1.5.9.RELEASE')
+    compile('org.springframework.boot:spring-boot-starter-aop:1.5.9.RELEASE')
+    compile("com.xuxueli:xxl-job-core:2.0.1-SNAPSHOT")
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "http://10.0.3.208:8081/nexus/content/repositories/snapshots/"){
+                authentication(userName: "admin", password: "admin123")
+        }
+    }
+  }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            artifact sourceJar {
+                classifier "sources"
+            }
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            credentials {
+                username 'admin'
+                password 'admin123'
+            }
+            url "http://10.0.3.208:8081/nexus/content/repositories/snapshots/"
+        }
+    }
+}
